@@ -10,8 +10,8 @@
  * (for example, ASSERT_TRUE(condition) or ASSERT_EQUALS(actual, expected)).
  *
  */
-#ifndef QUADRATIC_EQUATION_TESTLIB_H
-#define QUADRATIC_EQUATION_TESTLIB_H
+#ifndef TESTS_TESTLIB_H
+#define TESTS_TESTLIB_H
 
 #include <iostream>
 #include <cassert>
@@ -238,4 +238,4 @@ static inline bool isZero(double x) {
     );                                                                                                                 \
 } while (0)
 
-#endif //QUADRATIC_EQUATION_TESTLIB_H
+#endif // TESTS_TESTLIB_H
