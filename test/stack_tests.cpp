@@ -2,6 +2,7 @@
  * @file
  */
 
+#include <sys/types.h>
 #include "testlib.h"
 
 #define STACK_TYPE int
