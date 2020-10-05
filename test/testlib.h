@@ -172,9 +172,8 @@ public:
  */
 #define TESTLIB_ASSERT_FAILED(onFailure) do {                                                                          \
     TestRunner* runner = TestRunner::getInstance();                                                                    \
-    const Test* currentTest = runner->currentTest();                                                                   \
     std::cerr << TESTLIB_ANSI_COLOR_RED;                                                                               \
-    std::cerr << "[ASSERTION FAILED] " << currentTest->fileName() << ':' << currentTest->line() << '\n';               \
+    std::cerr << "[ASSERTION FAILED] " << __FILE__ << ':' << __LINE__ << '\n';                                         \
     onFailure;                                                                                                         \
     std::cerr << TESTLIB_ANSI_COLOR_RESET;                                                                             \
     runner->failCurrentTest();                                                                                         \
@@ -237,5 +236,19 @@ static inline bool isZero(double x) {
         TESTLIB_ASSERT_EQUALS_FAILURE_MESSAGE(expectedResult, actualResult)                                            \
     );                                                                                                                 \
 } while (0)
+
+/**
+ * Asserts if the value is equal to nullptr.
+ *
+ * @param value value to check for null
+ */
+#define ASSERT_NULL(value) ASSERT_TRUE((value) == nullptr)
+
+/**
+ * Asserts if the value is not equal to nullptr.
+ *
+ * @param value value to check for not-null
+ */
+#define ASSERT_NOT_NULL(value) ASSERT_TRUE((value) != nullptr)
 
 #endif // TESTS_TESTLIB_H

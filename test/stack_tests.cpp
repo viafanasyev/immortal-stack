@@ -15,13 +15,13 @@ TEST(constructDestruct, simpleIntStack) {
 
     ASSERT_EQUALS(s.size, 0);
     ASSERT_EQUALS(s.capacity, initialCapacity);
-    ASSERT_TRUE(s.data != nullptr);
+    ASSERT_NOT_NULL(s.data);
 
     destructStack(&s);
 
     ASSERT_EQUALS(s.size, 0);
     ASSERT_EQUALS(s.capacity, 0);
-    ASSERT_TRUE(s.data == nullptr);
+    ASSERT_NULL(s.data);
 }
 
 TEST(pushPop, correctStackElementsOrder) {
