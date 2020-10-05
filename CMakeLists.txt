@@ -7,10 +7,13 @@ add_compile_options(-Wall -Wextra -pedantic -Werror -Wfloat-equal)
 
 add_executable(
         stack
-        src/main.cpp)
+        src/main.cpp
+        src/stack.h)
 
 add_executable(
         tests
         test/main.cpp
         test/testlib.h
-        test/testlib.cpp)
+        test/testlib.cpp
+        test/stack_tests.cpp
+        src/stack.h)
