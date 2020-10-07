@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <sys/types.h>
+#include <typeinfo>
 #include "environment.h"
 #include "logger.h"
 
@@ -120,6 +121,9 @@ static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
 /** Name of the stack log file */
 #define stackLogFileName "stack-dump.txt"
 
+#define xstr(a) #a
+#define str(a) xstr(a)
+
 /**
  * Logs the given stack into the log file.          <br>
  * Logged stack example:                            <br>
@@ -138,7 +142,8 @@ static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
  * </code>
  */
 #define LOG_STACK(stack) do {                                                                                          \
-    logPrintf("%s [" PTR_FORMAT "] (%s:%d)", #stack, (uintptr_t)stack, __FILENAME__, __LINE__);                        \
+    logPrintf("%s %s [" PTR_FORMAT "] (%s:%d)",                                                                        \
+        str(TYPED_STACK(STACK_TYPE)), #stack, (uintptr_t)stack, __FILENAME__, __LINE__);                               \
     if (stack == nullptr) {                                                                                            \
         logPrintf("\n");                                                                                               \
         break;                                                                                                         \
@@ -152,6 +157,7 @@ static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
     LOG_ARRAY_INDENTED(data, capacity, "\t");                                                                          \
     logPrintf("}\n");                                                                                                  \
 } while (0)
+// TODO: Convert all stack operations to macros for proper name and file displaying in log file.
 
 /**
  * Checks if the given condition is true fo this stack.

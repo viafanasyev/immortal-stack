@@ -121,6 +121,24 @@ Usage</h2>
 <div class="line">    destructStack(&amp;s);</div>
 <div class="line"> </div>
 <div class="line">...</div>
+</div><!-- fragment --><p>Also you can use multiple typed stacks:</p>
+<div class="fragment"><div class="line"> {C++}</div>
+<div class="line"> </div>
+<div class="line">#define STACK_TYPE int</div>
+<div class="line">#include &quot;stack.h&quot; // Includes Stack_int</div>
+<div class="line">#undef STACK_TYPE</div>
+<div class="line"> </div>
+<div class="line">#define STACK_TYPE double</div>
+<div class="line">#include &quot;stack.h&quot; // Includes Stack_double</div>
+<div class="line">#undef STACK_TYPE</div>
+<div class="line"> </div>
+<div class="line">...</div>
+<div class="line"> </div>
+<div class="line">    // Int and double stacks can be accessed</div>
+<div class="line">    Stack_int s1;</div>
+<div class="line">    Stack_double s2;</div>
+<div class="line"> </div>
+<div class="line">...</div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md4"></a>
 Run</h2>
 <h3><a class="anchor" id="autotoc_md5"></a>
