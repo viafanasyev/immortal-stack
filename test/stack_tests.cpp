@@ -25,7 +25,7 @@ TEST(constructDestruct, simpleIntStack) {
     ASSERT_NULL(s._data);
 }
 
-TEST(pushPop, correctStackElementsOrder) {
+TEST(pushTopPop, correctStackElementsOrder) {
     Stack_int s{};
     constructStack(&s);
 
@@ -38,9 +38,12 @@ TEST(pushPop, correctStackElementsOrder) {
 
     ASSERT_EQUALS(getStackSize(&s), elementsCount);
     for (ssize_t i = elementsCount - 1; i >= 0; --i) {
+        ASSERT_EQUALS(top(&s), elements[i]);
         ASSERT_EQUALS(pop(&s), elements[i]);
     }
     ASSERT_EQUALS(getStackSize(&s), 0);
 
     destructStack(&s);
 }
+
+// TODO: Test memory vulnerabilities

@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Header with helper macros that depend on environment (OS, bitness, etc)
  */
 #ifndef IMMORTAL_STACK_ENVIRONMENT_H
 #define IMMORTAL_STACK_ENVIRONMENT_H
