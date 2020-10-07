@@ -8,7 +8,9 @@ add_compile_options(-Wall -Wextra -pedantic -Werror -Wfloat-equal)
 add_executable(
         stack
         src/main.cpp
-        src/stack.h)
+        src/stack.h
+        src/logger.h
+        src/environment.h)
 
 add_executable(
         tests
