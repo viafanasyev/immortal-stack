@@ -56,6 +56,27 @@ To use stack use the following code (or the same):
     destructStack(&s);
 
 ...
+```
+
+Also you can use multiple typed stacks:
+
+```C++
+
+#define STACK_TYPE int
+#include "stack.h" // Includes Stack_int
+#undef STACK_TYPE
+
+#define STACK_TYPE double
+#include "stack.h" // Includes Stack_double
+#undef STACK_TYPE
+
+...
+
+    // Int and double stacks can be accessed
+    Stack_int s1;
+    Stack_double s2;
+
+...
 
 ```
 

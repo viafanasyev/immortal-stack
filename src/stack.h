@@ -118,7 +118,7 @@ static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
 }
 
 /** Name of the stack log file */
-constexpr const char* stackLogFileName = "stack-dump.txt";
+#define stackLogFileName "stack-dump.txt"
 
 /**
  * Logs the given stack into the log file.          <br>
