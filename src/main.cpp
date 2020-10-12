@@ -1,6 +1,8 @@
 /**
  * @file
  */
+
+#define STACK_SECURITY_LEVEL 1
 #define STACK_TYPE int
 #include "stack.h"
 #undef STACK_TYPE

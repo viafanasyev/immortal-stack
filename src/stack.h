@@ -13,6 +13,10 @@
 #include "environment.h"
 #include "logger.h"
 
+#ifndef STACK_SECURITY_LEVEL
+    #define STACK_SECURITY_LEVEL 0
+#endif
+
 /**
  * Primitive analog of C++ templates.
  * Generates name of the struct/class from it's base name and type parameter.
@@ -159,25 +163,37 @@ static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
 } while (0)
 // TODO: Convert all stack operations to macros for proper name and file displaying in log file.
 
-/**
- * Checks if the given condition is true fo this stack.
- * If the condition is false, logs the stack into the file and fails an assertion.
- */
-#define CHECK_STACK_CONDITION(stack, condition) do {                                                                   \
-    if (!(condition)) {                                                                                                \
-        logOpen(stackLogFileName);                                                                                     \
-        LOG_STACK(stack);                                                                                              \
-        logClose();                                                                                                    \
-        assert(condition);                                                                                             \
-    }                                                                                                                  \
-} while (0)
+#if STACK_SECURITY_LEVEL >= 1
+    /**
+     * Checks if the given condition is true fo this stack.
+     * If the condition is false, logs the stack into the file and fails an assertion.
+     *
+     * Works when STACK_SECURITY_LEVEL >= 1.
+     */
+    #define CHECK_STACK_CONDITION(stack, condition) do {                                                                   \
+        if (!(condition)) {                                                                                                \
+            logOpen(stackLogFileName);                                                                                     \
+            LOG_STACK(stack);                                                                                              \
+            logClose();                                                                                                    \
+            assert(condition);                                                                                             \
+        }                                                                                                                  \
+    } while (0)
+#else
+    #define CHECK_STACK_CONDITION(stack, condition) do { } while(0)
+#endif
 
-/**
- * Checks if the given stack is in normal state.
- *
- * @see isStackOk
- */
-#define CHECK_STACK_OK(stack) CHECK_STACK_CONDITION(stack, isStackOk(stack))
+#if STACK_SECURITY_LEVEL >= 1
+    /**
+     * Checks if the given stack is in normal state.
+     *
+     * Works when STACK_SECURITY_LEVEL >= 1.
+     *
+     * @see isStackOk
+     */
+    #define CHECK_STACK_OK(stack) CHECK_STACK_CONDITION(stack, isStackOk(stack))
+#else
+    #define CHECK_STACK_OK(stack) do { } while(0)
+#endif
 
 //----------------------------------------------------------------------------------------------------------------------
 
