@@ -3,7 +3,7 @@ project(immortal-stack)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_compile_options(-Wall -Wextra -pedantic -Werror -Wfloat-equal)
+add_compile_options(-Wall -Wextra -pedantic -Werror -Wfloat-equal -fno-stack-protector)
 
 add_executable(
         stack
