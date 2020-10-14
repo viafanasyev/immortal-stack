@@ -14,6 +14,7 @@
 #include "logger.h"
 
 #ifdef NDEBUG
+    #undef STACK_SECURITY_LEVEL
     #define STACK_SECURITY_LEVEL 0
 #endif
 
