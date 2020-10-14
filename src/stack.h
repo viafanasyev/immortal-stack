@@ -13,6 +13,10 @@
 #include "environment.h"
 #include "logger.h"
 
+#ifdef NDEBUG
+    #define STACK_SECURITY_LEVEL 0
+#endif
+
 #ifndef STACK_SECURITY_LEVEL
     #define STACK_SECURITY_LEVEL 0
 #endif
