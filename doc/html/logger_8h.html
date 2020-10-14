@@ -108,6 +108,8 @@ Functions</h2></td></tr>
 <tr class="separator:a66abcd8e669b60cb72541e7d471e0fba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afb416e613f9b5b350f0394fe653a0938"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logger_8h.html#afb416e613f9b5b350f0394fe653a0938">logValue</a> (long int value)</td></tr>
 <tr class="separator:afb416e613f9b5b350f0394fe653a0938"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fc4cdd32ebf818fd0e2641435c61a2b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logger_8h.html#a6fc4cdd32ebf818fd0e2641435c61a2b">logValue</a> (unsigned long int value)</td></tr>
+<tr class="separator:a6fc4cdd32ebf818fd0e2641435c61a2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a308c2e1b2986f7d256a26e22062292e3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logger_8h.html#a308c2e1b2986f7d256a26e22062292e3">logValue</a> (long long value)</td></tr>
 <tr class="separator:a308c2e1b2986f7d256a26e22062292e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0191f42e362dcf263ac8dabdf6d5bcb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logger_8h.html#ac0191f42e362dcf263ac8dabdf6d5bcb">logValue</a> (unsigned long long value)</td></tr>
@@ -133,9 +135,6 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a61c26746ab8b7c2d765be3bd7bcf8518"><td class="memItemLeft" align="right" valign="top"><a id="a61c26746ab8b7c2d765be3bd7bcf8518"></a>
-FILE *&#160;</td><td class="memItemRight" valign="bottom"><b>_logFile</b> = nullptr</td></tr>
-<tr class="separator:a61c26746ab8b7c2d765be3bd7bcf8518"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86984febb4bb06b0ce1367cdf53a5d9c"><td class="memItemLeft" align="right" valign="top"><a id="a86984febb4bb06b0ce1367cdf53a5d9c"></a>
 constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>defaultLogFileName</b> = &quot;log.txt&quot;</td></tr>
 <tr class="separator:a86984febb4bb06b0ce1367cdf53a5d9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -210,7 +209,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 <div class="line">        break;                                                                                                         \</div>
 <div class="line">    }                                                                                                                  \</div>
 <div class="line">    logPrintf(<span class="stringliteral">&quot; = {\n&quot;</span>);                                                                                               \</div>
-<div class="line">    for (ssize_t i = 0; i &lt; length; ++i) {                                                                             \</div>
+<div class="line">    for (<span class="keywordtype">size_t</span> i = 0; i &lt; (length); ++i) {                                                                            \</div>
 <div class="line">        logPrintf(indent <span class="stringliteral">&quot;\t[%zu] = &quot;</span>, i);                                                                             \</div>
 <div class="line">        logValue(array[i]);                                                                                            \</div>
 <div class="line">        logPrintf(<span class="stringliteral">&quot;\n&quot;</span>);                                                                                               \</div>
@@ -280,6 +279,9 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void logClose </td>
@@ -288,6 +290,11 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 <p>Closes the current log file. </p>
 
@@ -298,6 +305,9 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void logOpen </td>
@@ -317,6 +327,11 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 <p>Opens a file for logging. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -333,6 +348,9 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void logPrintf </td>
@@ -352,13 +370,18 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 <p>Prints formatted string (like printf or fprintf) in the log file. </p>
 
 </div>
 </div>
 <a id="a0f44fc7b3c88e7e435a11b0e34958b55"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f44fc7b3c88e7e435a11b0e34958b55">&#9670;&nbsp;</a></span>logValue() <span class="overload">[1/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f44fc7b3c88e7e435a11b0e34958b55">&#9670;&nbsp;</a></span>logValue() <span class="overload">[1/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -385,7 +408,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="a5230a4c8ab8bd34f3f3770172fce824b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5230a4c8ab8bd34f3f3770172fce824b">&#9670;&nbsp;</a></span>logValue() <span class="overload">[2/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5230a4c8ab8bd34f3f3770172fce824b">&#9670;&nbsp;</a></span>logValue() <span class="overload">[2/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -412,7 +435,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="ada3a2d50ce472a99e3d487afe8195d9a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ada3a2d50ce472a99e3d487afe8195d9a">&#9670;&nbsp;</a></span>logValue() <span class="overload">[3/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ada3a2d50ce472a99e3d487afe8195d9a">&#9670;&nbsp;</a></span>logValue() <span class="overload">[3/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -439,7 +462,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="a0a9ccbe50cac2a03e9bd3b6f7f6ab8ec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0a9ccbe50cac2a03e9bd3b6f7f6ab8ec">&#9670;&nbsp;</a></span>logValue() <span class="overload">[4/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a9ccbe50cac2a03e9bd3b6f7f6ab8ec">&#9670;&nbsp;</a></span>logValue() <span class="overload">[4/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -466,7 +489,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="aba6f4c0c454b1c737c841e504ae31304"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba6f4c0c454b1c737c841e504ae31304">&#9670;&nbsp;</a></span>logValue() <span class="overload">[5/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aba6f4c0c454b1c737c841e504ae31304">&#9670;&nbsp;</a></span>logValue() <span class="overload">[5/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -493,7 +516,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="aea59bdf7380a40a87f701e7bf69a4bf9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aea59bdf7380a40a87f701e7bf69a4bf9">&#9670;&nbsp;</a></span>logValue() <span class="overload">[6/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aea59bdf7380a40a87f701e7bf69a4bf9">&#9670;&nbsp;</a></span>logValue() <span class="overload">[6/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -520,7 +543,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="a0114c8cb6e65d8f2679b8dd47f190ef0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0114c8cb6e65d8f2679b8dd47f190ef0">&#9670;&nbsp;</a></span>logValue() <span class="overload">[7/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0114c8cb6e65d8f2679b8dd47f190ef0">&#9670;&nbsp;</a></span>logValue() <span class="overload">[7/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -547,7 +570,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="afb416e613f9b5b350f0394fe653a0938"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb416e613f9b5b350f0394fe653a0938">&#9670;&nbsp;</a></span>logValue() <span class="overload">[8/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afb416e613f9b5b350f0394fe653a0938">&#9670;&nbsp;</a></span>logValue() <span class="overload">[8/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -574,7 +597,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="a308c2e1b2986f7d256a26e22062292e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a308c2e1b2986f7d256a26e22062292e3">&#9670;&nbsp;</a></span>logValue() <span class="overload">[9/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a308c2e1b2986f7d256a26e22062292e3">&#9670;&nbsp;</a></span>logValue() <span class="overload">[9/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -601,7 +624,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="a2162f6ba1943544fc1342a681dd51881"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2162f6ba1943544fc1342a681dd51881">&#9670;&nbsp;</a></span>logValue() <span class="overload">[10/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2162f6ba1943544fc1342a681dd51881">&#9670;&nbsp;</a></span>logValue() <span class="overload">[10/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -628,7 +651,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="a25cf7a6d69ee3b71e9c65a3460549d2e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a25cf7a6d69ee3b71e9c65a3460549d2e">&#9670;&nbsp;</a></span>logValue() <span class="overload">[11/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a25cf7a6d69ee3b71e9c65a3460549d2e">&#9670;&nbsp;</a></span>logValue() <span class="overload">[11/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -655,7 +678,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="a66abcd8e669b60cb72541e7d471e0fba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a66abcd8e669b60cb72541e7d471e0fba">&#9670;&nbsp;</a></span>logValue() <span class="overload">[12/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a66abcd8e669b60cb72541e7d471e0fba">&#9670;&nbsp;</a></span>logValue() <span class="overload">[12/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -681,8 +704,35 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 
 </div>
 </div>
+<a id="a6fc4cdd32ebf818fd0e2641435c61a2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fc4cdd32ebf818fd0e2641435c61a2b">&#9670;&nbsp;</a></span>logValue() <span class="overload">[13/15]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void logValue </td>
+          <td>(</td>
+          <td class="paramtype">unsigned long int&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Logs unsigned long int value into log file. </p>
+
+</div>
+</div>
 <a id="ac0191f42e362dcf263ac8dabdf6d5bcb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac0191f42e362dcf263ac8dabdf6d5bcb">&#9670;&nbsp;</a></span>logValue() <span class="overload">[13/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0191f42e362dcf263ac8dabdf6d5bcb">&#9670;&nbsp;</a></span>logValue() <span class="overload">[14/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -709,7 +759,7 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><b>def
 </div>
 </div>
 <a id="af7747c4c45498ae287f6f1e9b8f4847f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af7747c4c45498ae287f6f1e9b8f4847f">&#9670;&nbsp;</a></span>logValue() <span class="overload">[14/14]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#af7747c4c45498ae287f6f1e9b8f4847f">&#9670;&nbsp;</a></span>logValue() <span class="overload">[15/15]</span></h2>
 
 <div class="memitem">
 <div class="memproto">

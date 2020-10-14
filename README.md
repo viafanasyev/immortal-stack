@@ -4,14 +4,15 @@
 
 This program is developed as a part of ISP RAS course.  
 
-This program contains a primitive generic stack with auto logging on errors.  
+This program contains a generic stack with auto logging on errors.  
+Stack performs additional corruption checking: silent verification, canary guards, hash checking.  
 Errors with stack are logged into `stack-dump.txt` file.
 
 ### Structure
 
 * src/ : Main project
     * main.cpp : Entry point for the program.
-    * stack.h : Definition and implementation of primitive generic stack.
+    * stack.h : Definition and implementation of error-secure generic stack.
     * logger.h : Definition and implementation of logging functions and macros.
     * environment.h : Helper macros that are environment-dependent (OS, bitness, etc).
 
@@ -77,6 +78,17 @@ Also you can use multiple typed stacks:
     Stack_double s2;
 
 ...
+
+```
+
+To enable corruption checking use the STACK_SECURITY_LEVEL macro (define it before including stack.h):
+
+```C++
+
+#define STACK_SECURITY_LEVEL 0 // No checks performed
+#define STACK_SECURITY_LEVEL 1 // Silent verification, logging
+#define STACK_SECURITY_LEVEL 2 // Silent verification, logging, canary guards
+#define STACK_SECURITY_LEVEL 3 // Silent verification, logging, canary guards, hash checking
 
 ```
 

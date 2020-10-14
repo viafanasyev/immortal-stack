@@ -69,14 +69,15 @@ $(function() {
 Project description</h1>
 <p>This program is developed as a part of ISP RAS course. <br  />
 </p>
-<p>This program contains a primitive generic stack with auto logging on errors. <br  />
+<p>This program contains a generic stack with auto logging on errors. <br  />
+ Stack performs additional corruption checking: silent verification, canary guards, hash checking. <br  />
  Errors with stack are logged into <code>stack-dump.txt</code> file.</p>
 <h2><a class="anchor" id="autotoc_md2"></a>
 Structure</h2>
 <ul>
 <li>src/ : Main project<ul>
 <li>main.cpp : Entry point for the program.</li>
-<li><a class="el" href="stack_8h.html" title="Definition and implementation of generic stack.">stack.h</a> : Definition and implementation of primitive generic stack.</li>
+<li><a class="el" href="stack_8h.html" title="Definition and implementation of generic stack.">stack.h</a> : Definition and implementation of error-secure generic stack.</li>
 <li><a class="el" href="logger_8h.html" title="Definition and implementation of logging functions and macros.">logger.h</a> : Definition and implementation of logging functions and macros.</li>
 <li><a class="el" href="environment_8h.html" title="Header with helper macros that depend on environment (OS, bitness, etc)">environment.h</a> : Helper macros that are environment-dependent (OS, bitness, etc).</li>
 </ul>
@@ -139,6 +140,13 @@ Usage</h2>
 <div class="line">    Stack_double s2;</div>
 <div class="line"> </div>
 <div class="line">...</div>
+</div><!-- fragment --><p>To enable corruption checking use the STACK_SECURITY_LEVEL macro (define it before including <a class="el" href="stack_8h.html" title="Definition and implementation of generic stack.">stack.h</a>):</p>
+<div class="fragment"><div class="line"> {C++}</div>
+<div class="line"> </div>
+<div class="line">#define STACK_SECURITY_LEVEL 0 // No checks performed</div>
+<div class="line">#define STACK_SECURITY_LEVEL 1 // Silent verification, logging</div>
+<div class="line">#define STACK_SECURITY_LEVEL 2 // Silent verification, logging, canary guards</div>
+<div class="line">#define STACK_SECURITY_LEVEL 3 // Silent verification, logging, canary guards, hash checking</div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md4"></a>
 Run</h2>
 <h3><a class="anchor" id="autotoc_md5"></a>

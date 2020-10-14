@@ -76,11 +76,15 @@ $(function() {
 
 <p>Header file with testlib description.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;iostream&gt;</code><br />
-<code>#include &lt;cassert&gt;</code><br />
-<code>#include &lt;vector&gt;</code><br />
+<div class="textblock"><code>#include &lt;cassert&gt;</code><br />
 <code>#include &lt;cmath&gt;</code><br />
+<code>#include &lt;csignal&gt;</code><br />
 <code>#include &lt;functional&gt;</code><br />
+<code>#include &lt;fcntl.h&gt;</code><br />
+<code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;unistd.h&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
+<code>#include &lt;wait.h&gt;</code><br />
 </div>
 <p><a href="testlib_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -126,6 +130,8 @@ Macros</h2></td></tr>
 <tr class="separator:ac7b6e1dd68b1c668195546c7a9c9aa4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71f7770927267fbaf23fb80f818ea158"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="testlib_8h.html#a71f7770927267fbaf23fb80f818ea158">ASSERT_NOT_NULL</a>(value)&#160;&#160;&#160;<a class="el" href="testlib_8h.html#ae9244bfbda562e8b798789b001993fa5">ASSERT_TRUE</a>((value) != nullptr)</td></tr>
 <tr class="separator:a71f7770927267fbaf23fb80f818ea158"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f919adfb863fa8dcaa3da9d7dd5731b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="testlib_8h.html#a7f919adfb863fa8dcaa3da9d7dd5731b">ASSERT_DIES</a>(statement)</td></tr>
+<tr class="separator:a7f919adfb863fa8dcaa3da9d7dd5731b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -137,6 +143,52 @@ Typedefs</h2></td></tr>
 <p>Tests can be created with <a class="el" href="testlib_8h.html#a63862f8a42d6bee21007a3764e6c003c">TEST(group, name)</a> macro. Tests that are declared with this macro are registered in <a class="el" href="class_test_runner.html">TestRunner</a>. Use <a class="el" href="class_test_runner.html#ac932511328802eb63e9b37ca02a62b9a">TestRunner.runAllTests()</a> in main() to run all created tests.</p>
 <p>You can use assertions in test functions to check some condition (for example, <a class="el" href="testlib_8h.html#ae9244bfbda562e8b798789b001993fa5">ASSERT_TRUE(condition)</a> or <a class="el" href="testlib_8h.html#af231523b81f0ab75c26bdcd1b0072478">ASSERT_EQUALS(actual, expected)</a>). </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a7f919adfb863fa8dcaa3da9d7dd5731b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f919adfb863fa8dcaa3da9d7dd5731b">&#9670;&nbsp;</a></span>ASSERT_DIES</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ASSERT_DIES</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">statement</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> {                                                                                    \</div>
+<div class="line">    int status = 0;                                                                                                    \</div>
+<div class="line">    pid_t ppid = 0;                                                                                                    \</div>
+<div class="line">    if ((ppid = fork()) &lt; 0) {                                                                                         \</div>
+<div class="line">        fprintf(stderr, <span class="stringliteral">&quot;Failed to create child process\n&quot;</span>);                                                           \</div>
+<div class="line">        TESTLIB_ASSERT_FAILED();                                                                                       \</div>
+<div class="line">    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (ppid == 0) {                                                                                            \</div>
+<div class="line">        int fd = open(<span class="stringliteral">&quot;/dev/null&quot;</span>, O_RDWR);                                                                            \</div>
+<div class="line">        dup2(fd, 0);                                                                                                   \</div>
+<div class="line">        dup2(fd, 1);                                                                                                   \</div>
+<div class="line">        dup2(fd, 2);                                                                                                   \</div>
+<div class="line">        close(fd);                                                                                                     \</div>
+<div class="line">                                                                                                                       \</div>
+<div class="line">        statement;                                                                                                     \</div>
+<div class="line">                                                                                                                       \</div>
+<div class="line">        exit(0);                                                                                                       \</div>
+<div class="line">    }                                                                                                                  \</div>
+<div class="line">                                                                                                                       \</div>
+<div class="line">    waitpid(ppid, &amp;status, 0);                                                                                         \</div>
+<div class="line">    ASSERT_TRUE(status != 0);                                                                                          \</div>
+<div class="line">} <span class="keywordflow">while</span> (0)</div>
+</div><!-- fragment --><p>Asserts if the statement execution makes the current process die.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">statement</td><td>statement to check </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a52635d5958ac97c91f58a50937ed2194"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a52635d5958ac97c91f58a50937ed2194">&#9670;&nbsp;</a></span>ASSERT_DOUBLE_EQUALS</h2>
 
@@ -482,10 +534,10 @@ Typedefs</h2></td></tr>
 <div class="line">    runner-&gt;failCurrentTest();                                                                                         \</div>
 <div class="line">    return;                                                                                                            \</div>
 <div class="line">} <span class="keywordflow">while</span> (0)</div>
-</div><!-- fragment --><p>Inner helper macro for showing that assertion and current test failed. Use this in assertions macros, not in a tests.</p>
+</div><!-- fragment --><p>Inner helper macro for showing that assertion and current test failed. Use this in assertions macros, not in tests.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">onFailure</td><td>code that is executed during the assertion failure. Can be use to print some additional info to std::cerr. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">onFailure</td><td>code that is executed during the assertion failure. Can be used to print some additional info to std::cerr. </td></tr>
   </table>
   </dd>
 </dl>
@@ -524,12 +576,12 @@ Typedefs</h2></td></tr>
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="atestlib_8h_html_a3e8ea953365265f6627605afbde9ba70"><div class="ttname"><a href="testlib_8h.html#a3e8ea953365265f6627605afbde9ba70">TEST_NAME</a></div><div class="ttdeci">#define TEST_NAME(group, name)</div><div class="ttdef"><b>Definition:</b> testlib.h:137</div></div>
-<div class="ttc" id="atestlib_8h_html_abf80da56d1d25ea55beea997960ff2ae"><div class="ttname"><a href="testlib_8h.html#abf80da56d1d25ea55beea997960ff2ae">ASSERT_TRUE_WITH_FAILURE</a></div><div class="ttdeci">#define ASSERT_TRUE_WITH_FAILURE(condition, onFailure)</div><div class="ttdef"><b>Definition:</b> testlib.h:209</div></div>
+<div class="ttc" id="atestlib_8h_html_a3e8ea953365265f6627605afbde9ba70"><div class="ttname"><a href="testlib_8h.html#a3e8ea953365265f6627605afbde9ba70">TEST_NAME</a></div><div class="ttdeci">#define TEST_NAME(group, name)</div><div class="ttdef"><b>Definition:</b> testlib.h:141</div></div>
+<div class="ttc" id="atestlib_8h_html_abf80da56d1d25ea55beea997960ff2ae"><div class="ttname"><a href="testlib_8h.html#abf80da56d1d25ea55beea997960ff2ae">ASSERT_TRUE_WITH_FAILURE</a></div><div class="ttdeci">#define ASSERT_TRUE_WITH_FAILURE(condition, onFailure)</div><div class="ttdef"><b>Definition:</b> testlib.h:213</div></div>
 <div class="ttc" id="aclass_test_runner_html_a06e0d07520d2e392aed9db437885a75c"><div class="ttname"><a href="class_test_runner.html#a06e0d07520d2e392aed9db437885a75c">TestRunner::addTest</a></div><div class="ttdeci">Test * addTest(TestPtr testPtr, const char *fileName, unsigned int line)</div><div class="ttdef"><b>Definition:</b> testlib.cpp:58</div></div>
-<div class="ttc" id="atestlib_8h_html_abf1c68451f41d73653199ef83b4b1074"><div class="ttname"><a href="testlib_8h.html#abf1c68451f41d73653199ef83b4b1074">TESTLIB_ASSERT_EQUALS_FAILURE_MESSAGE</a></div><div class="ttdeci">#define TESTLIB_ASSERT_EQUALS_FAILURE_MESSAGE(expected, actual)</div><div class="ttdef"><b>Definition:</b> testlib.h:196</div></div>
-<div class="ttc" id="atestlib_8h_html_a6f9bfa46a963a63e89c25b399dc6a3b7"><div class="ttname"><a href="testlib_8h.html#a6f9bfa46a963a63e89c25b399dc6a3b7">TEST_INFO</a></div><div class="ttdeci">#define TEST_INFO(group, name)</div><div class="ttdef"><b>Definition:</b> testlib.h:139</div></div>
-<div class="ttc" id="aclass_test_html"><div class="ttname"><a href="class_test.html">Test</a></div><div class="ttdef"><b>Definition:</b> testlib.h:36</div></div>
+<div class="ttc" id="atestlib_8h_html_abf1c68451f41d73653199ef83b4b1074"><div class="ttname"><a href="testlib_8h.html#abf1c68451f41d73653199ef83b4b1074">TESTLIB_ASSERT_EQUALS_FAILURE_MESSAGE</a></div><div class="ttdeci">#define TESTLIB_ASSERT_EQUALS_FAILURE_MESSAGE(expected, actual)</div><div class="ttdef"><b>Definition:</b> testlib.h:200</div></div>
+<div class="ttc" id="atestlib_8h_html_a6f9bfa46a963a63e89c25b399dc6a3b7"><div class="ttname"><a href="testlib_8h.html#a6f9bfa46a963a63e89c25b399dc6a3b7">TEST_INFO</a></div><div class="ttdeci">#define TEST_INFO(group, name)</div><div class="ttdef"><b>Definition:</b> testlib.h:143</div></div>
+<div class="ttc" id="aclass_test_html"><div class="ttname"><a href="class_test.html">Test</a></div><div class="ttdef"><b>Definition:</b> testlib.h:40</div></div>
 <div class="ttc" id="aclass_test_runner_html_ab92ba345c5bc9c3e5284aca8f6961cd9"><div class="ttname"><a href="class_test_runner.html#ab92ba345c5bc9c3e5284aca8f6961cd9">TestRunner::getInstance</a></div><div class="ttdeci">static TestRunner * getInstance()</div><div class="ttdef"><b>Definition:</b> testlib.cpp:144</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

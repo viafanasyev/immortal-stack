@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['immortal_20stack_13',['Immortal stack',['../index.html',1,'']]]
+  ['immortal_20stack_14',['Immortal stack',['../index.html',1,'']]]
 ];
