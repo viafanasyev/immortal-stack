@@ -10,14 +10,14 @@
 #include <cstdio>
 #include "environment.h"
 
-FILE* _logFile = nullptr;
+static FILE* _logFile = nullptr;
 
 constexpr const char* defaultLogFileName = "log.txt";
 
 /**
  * Closes the current log file.
  */
-void logClose() {
+inline void logClose() {
     if (_logFile != nullptr) {
         fclose(_logFile);
         _logFile = nullptr;
@@ -29,7 +29,7 @@ void logClose() {
  * @param[in] logFilePath path to the file to log info in
  * @param[in] modes       modes to open file in
  */
-void logOpen(const char* logFilePath = defaultLogFileName, const char* modes = "a+") {
+inline void logOpen(const char* logFilePath = defaultLogFileName, const char* modes = "a+") {
     assert(logFilePath != nullptr);
     assert(modes != nullptr);
 
@@ -40,7 +40,7 @@ void logOpen(const char* logFilePath = defaultLogFileName, const char* modes = "
 /**
  * Prints formatted string (like printf or fprintf) in the log file.
  */
-void logPrintf(const char* format, ...) {
+inline void logPrintf(const char* format, ...) {
     assert(_logFile != nullptr);
     assert(format != nullptr);
 
@@ -71,6 +71,13 @@ inline void logValue(unsigned int value) {
  */
 inline void logValue(long int value) {
     logPrintf("%ld", value);
+}
+
+/**
+ * Logs unsigned long int value into log file.
+ */
+inline void logValue(unsigned long int value) {
+    logPrintf("%zu", value);
 }
 
 /**
@@ -178,7 +185,7 @@ inline void logValue(bool value) {
         break;                                                                                                         \
     }                                                                                                                  \
     logPrintf(" = {\n");                                                                                               \
-    for (ssize_t i = 0; i < length; ++i) {                                                                             \
+    for (size_t i = 0; i < (length); ++i) {                                                                            \
         logPrintf(indent "\t[%zu] = ", i);                                                                             \
         logValue(array[i]);                                                                                            \
         logPrintf("\n");                                                                                               \

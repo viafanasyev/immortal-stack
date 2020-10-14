@@ -28,13 +28,23 @@
  */
 #define TYPED_STACK(type) TYPED(Stack, type)
 
+/** Number of canary guards */
+#define canariesNumber 1
+/** Value of each canary guard */
+#define canaryValue 0x0C4ECCED
+
 /**
  * Generic stack that can contain any (almost) value that is specified by STACK_TYPE macro.
  * Stack allocates new memory if there's no empty space left to add new element.
  * Stack operations (construct/destruct, push, pop, etc) should be performed using the functions below.
+ * Stack can perform different corruption checking (see STACK_SECURITY_LEVEL): silent verification, canary guards.
  */
 struct TYPED_STACK(STACK_TYPE) {
     /* !!! Private members !!! */
+
+#if STACK_SECURITY_LEVEL >= 2
+    long long _canariesBefore[canariesNumber];
+#endif
 
     /** Number of elements in stack */
     ssize_t _size = 0;
@@ -42,9 +52,25 @@ struct TYPED_STACK(STACK_TYPE) {
     /** Actual size of the stack data array */
     ssize_t _capacity = 0;
 
+#if STACK_SECURITY_LEVEL >= 2
+    /** Array with stack data. Contains canaries at the beginning and the end */
+    char* _data = nullptr;
+#else
     /** Array with stack data */
     STACK_TYPE* _data = nullptr;
+#endif
+
+#if STACK_SECURITY_LEVEL >= 2
+    long long _canariesAfter[canariesNumber];
+#endif
 };
+
+/**
+ * Checks if the given stack is in normal state (correct size and capacity, no nullptrs, correct canary values).
+ * @param[in, out] stack stack to check
+ * @return true, if the given stack is ok, false otherwise.
+ */
+static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack);
 
 /**
  * Creates a new stack with a given initial size of the data array.
@@ -88,45 +114,64 @@ STACK_TYPE pop(TYPED_STACK(STACK_TYPE)* thiz);
 
 /**
  * Gives value from top of the stack without removing it (unlike pop function).
- * @param[in, out] thiz pointer to the stack this operation should be performed on
+ * @param[in] thiz pointer to the stack this operation should be performed on
  * @return value that is located on top of the stack
  */
 STACK_TYPE top(TYPED_STACK(STACK_TYPE)* thiz);
 
 /**
  * Gives the number of elements in the given stack.
- * @param[in, out] thiz pointer to the stack this operation should be performed on
+ * @param[in] thiz pointer to the stack this operation should be performed on
  * @return size of the stack.
  */
 ssize_t getStackSize(TYPED_STACK(STACK_TYPE)* thiz);
 
 /**
  * Gives the actual size of the stack (size of the data holder array).
- * @param[in, out] thiz pointer to the stack this operation should be performed on
+ * @param[in] thiz pointer to the stack this operation should be performed on
  * @return capacity of the stack.
  */
 ssize_t getStackCapacity(TYPED_STACK(STACK_TYPE)* thiz);
 
-//----------------------------------------------------------------------------------------------------------------------
-
 /**
- * Checks if the given stack is in normal state (correct size and capacity and no nullptrs).
- * @param[in, out] stack stack to check
- * @return true, if the given stack is ok, false otherwise.
+ * Gives the pointer to the actual dynamic array of contained data:
+ *   - If the canary guards are turned on (STACK_SECURITY_LEVEL >= 2), adds the necessary offset to Stack _data pointer;
+ *   - Otherwise, just returns _data pointer.
+ * @param[in] thiz pointer to the stack this operation should be performed on
+ * @return pointer to the actual data array.
  */
-static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
-    return (stack != nullptr)                 &&
-           (stack->_size != -1)               &&
-           (stack->_capacity != -1)           &&
-           (stack->_size <= stack->_capacity) &&
-           (stack->_data != nullptr);
-}
+static STACK_TYPE* getStackData(TYPED_STACK(STACK_TYPE)* thiz);
+
+//----------------------------------------------------------------------------------------------------------------------
 
 /** Name of the stack log file */
 #define stackLogFileName "stack-dump.txt"
 
 #define xstr(a) #a
 #define str(a) xstr(a)
+
+#if STACK_SECURITY_LEVEL >= 2
+    /**
+     * Logs the canary values of the given stack.
+     *
+     * Works when STACK_SECURITY_LEVEL >= 2.
+     */
+    #define LOG_STACK_CANARIES(stack) do {                                                                             \
+        long long* canariesBefore = stack->_canariesBefore;                                                            \
+        long long* canariesAfter  = stack->_canariesAfter;                                                             \
+        LOG_ARRAY_INDENTED(canariesBefore, canariesNumber, "\t");                                                      \
+        LOG_ARRAY_INDENTED(canariesAfter,  canariesNumber, "\t");                                                      \
+                                                                                                                       \
+        long long* dataCanariesBefore =                                                                                \
+            (long long*)stack->_data;                                                                                  \
+        long long* dataCanariesAfter  =                                                                                \
+            (long long*)(stack->_data + sizeof(long long) * canariesNumber + sizeof(STACK_TYPE) * stack->_capacity);   \
+        LOG_ARRAY_INDENTED(dataCanariesBefore, canariesNumber, "\t");                                                  \
+        LOG_ARRAY_INDENTED(dataCanariesAfter,  canariesNumber, "\t");                                                  \
+    } while (0)
+#else
+    #define LOG_STACK_CANARIES(stack) do { } while (0)
+#endif
 
 /**
  * Logs the given stack into the log file.          <br>
@@ -155,28 +200,33 @@ static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
     logPrintf(" = {\n");                                                                                               \
     ssize_t size = stack->_size;                                                                                       \
     ssize_t capacity = stack->_capacity;                                                                               \
-    auto data = stack->_data;                                                                                          \
     LOG_VALUE_INDENTED(size, "\t");                                                                                    \
     LOG_VALUE_INDENTED(capacity, "\t");                                                                                \
-    LOG_ARRAY_INDENTED(data, capacity, "\t");                                                                          \
+                                                                                                                       \
+    auto data = getStackData(stack);                                                                                   \
+    size_t trueCapacity = (capacity < 0) ? 0 : capacity;                                                               \
+    LOG_ARRAY_INDENTED(data, trueCapacity, "\t");                                                                      \
+                                                                                                                       \
+    LOG_STACK_CANARIES(stack);                                                                                         \
+                                                                                                                       \
     logPrintf("}\n");                                                                                                  \
 } while (0)
 // TODO: Convert all stack operations to macros for proper name and file displaying in log file.
 
 #if STACK_SECURITY_LEVEL >= 1
     /**
-     * Checks if the given condition is true fo this stack.
+     * Checks if the given condition is true for this stack.
      * If the condition is false, logs the stack into the file and fails an assertion.
      *
      * Works when STACK_SECURITY_LEVEL >= 1.
      */
-    #define CHECK_STACK_CONDITION(stack, condition) do {                                                                   \
-        if (!(condition)) {                                                                                                \
-            logOpen(stackLogFileName);                                                                                     \
-            LOG_STACK(stack);                                                                                              \
-            logClose();                                                                                                    \
-            assert(condition);                                                                                             \
-        }                                                                                                                  \
+    #define CHECK_STACK_CONDITION(stack, condition) do {                                                               \
+        if (!(condition)) {                                                                                            \
+            logOpen(stackLogFileName);                                                                                 \
+            LOG_STACK(stack);                                                                                          \
+            logClose();                                                                                                \
+            assert(condition);                                                                                         \
+        }                                                                                                              \
     } while (0)
 #else
     #define CHECK_STACK_CONDITION(stack, condition) do { } while(0)
@@ -198,6 +248,38 @@ static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
+ * Checks if the given stack is in normal state (correct size and capacity, no nullptrs, correct canary values).
+ * @param[in, out] stack stack to check
+ * @return true, if the given stack is ok, false otherwise.
+ */
+bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
+    if (
+        (stack == nullptr)                 ||
+        (stack->_size == -1)               ||
+        (stack->_capacity == -1)           ||
+        (stack->_size > stack->_capacity)  ||
+        (stack->_data == nullptr)
+        ) {
+        return false;
+    }
+
+    #if STACK_SECURITY_LEVEL >= 2
+        long long* dataCanariesBefore =
+            ((long long*)(stack->_data));
+        long long* dataCanariesAfter =
+            ((long long*)(stack->_data + sizeof(long long) * canariesNumber + sizeof(STACK_TYPE) * stack->_capacity));
+        for (size_t i = 0; i < canariesNumber; ++i) {
+            if (stack->_canariesBefore[i] != canaryValue) return false;
+            if (stack->_canariesAfter [i] != canaryValue) return false;
+            if (dataCanariesBefore    [i] != canaryValue) return false;
+            if (dataCanariesAfter     [i] != canaryValue) return false;
+        }
+    #endif
+
+    return true;
+}
+
+/**
  * Creates a new stack with a given initial size of the data array.
  * @param[in, out] thiz       pointer to the stack this operation should be performed on
  * @param[in] initialCapacity initial size of the data array
@@ -205,9 +287,30 @@ static inline bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
 void constructStack(TYPED_STACK(STACK_TYPE)* const thiz, size_t initialCapacity) {
     CHECK_STACK_CONDITION(thiz, (thiz != nullptr) && (thiz->_data == nullptr));
 
+    #if STACK_SECURITY_LEVEL >= 2
+        for (size_t i = 0; i < canariesNumber; ++i) {
+            thiz->_canariesBefore[i] = canaryValue;
+            thiz->_canariesAfter [i] = canaryValue;
+        }
+    #endif
+
     thiz->_size = 0;
     thiz->_capacity = initialCapacity;
-    thiz->_data = new STACK_TYPE[initialCapacity];
+
+    #if STACK_SECURITY_LEVEL >= 2
+        thiz->_data =
+            new char[sizeof(long long) * canariesNumber + sizeof(STACK_TYPE) * initialCapacity + sizeof(long long) * canariesNumber];
+        long long* dataCanariesBefore =
+            ((long long*)thiz->_data);
+        long long* dataCanariesAfter  =
+            ((long long*)(thiz->_data + sizeof(long long) * canariesNumber + sizeof(STACK_TYPE) * initialCapacity));
+        for (size_t i = 0; i < canariesNumber; ++i) {
+            dataCanariesBefore[i] = canaryValue;
+            dataCanariesAfter [i] = canaryValue;
+        }
+    #else
+        thiz->_data = new STACK_TYPE[initialCapacity];
+    #endif
 }
 
 /**
@@ -234,10 +337,29 @@ void enlarge(TYPED_STACK(STACK_TYPE)* const thiz) {
 
     if (thiz->_size == thiz->_capacity) {
         thiz->_capacity = (thiz->_capacity == 0) ? 1 : thiz->_capacity * STACK_ENLARGE_MULTIPLIER;
-        auto newData = new STACK_TYPE[thiz->_capacity];
-        for (ssize_t i = 0; i < thiz->_size; ++i) {
-            newData[i] = thiz->_data[i];
-        }
+
+        #if STACK_SECURITY_LEVEL >= 2
+            char* newData =
+                new char[sizeof(long long) * canariesNumber + sizeof(STACK_TYPE) * thiz->_capacity + sizeof(long long) * canariesNumber];
+            for (size_t i = sizeof(long long) * canariesNumber; i < sizeof(long long) * canariesNumber + sizeof(STACK_TYPE) * thiz->_size; ++i) {
+                newData[i] = thiz->_data[i];
+            }
+
+            long long* dataCanariesBefore =
+                ((long long*)newData);
+            long long* dataCanariesAfter  =
+                ((long long*)(newData + sizeof(long long) * canariesNumber + sizeof(STACK_TYPE) * thiz->_capacity));
+            for (size_t i = 0; i < canariesNumber; ++i) {
+                dataCanariesBefore[i] = canaryValue;
+                dataCanariesAfter [i] = canaryValue;
+            }
+        #else
+            auto newData = new STACK_TYPE[thiz->_capacity];
+            for (ssize_t i = 0; i < thiz->_size; ++i) {
+                newData[i] = thiz->_data[i];
+            }
+        #endif
+
         delete[] thiz->_data;
         thiz->_data = newData;
     }
@@ -256,7 +378,7 @@ void push(TYPED_STACK(STACK_TYPE)* const thiz, STACK_TYPE x) {
     if (thiz->_size == thiz->_capacity) {
         enlarge(thiz);
     }
-    thiz->_data[thiz->_size++] = x;
+    getStackData(thiz)[thiz->_size++] = x;
 
     CHECK_STACK_OK(thiz);
 }
@@ -270,24 +392,24 @@ STACK_TYPE pop(TYPED_STACK(STACK_TYPE)* const thiz) {
     CHECK_STACK_OK(thiz);
     CHECK_STACK_CONDITION(thiz, thiz->_size > 0);
 
-    return thiz->_data[--thiz->_size];
+    return getStackData(thiz)[--thiz->_size];
 }
 
 /**
  * Gives value from top of the stack without removing it (unlike pop function).
- * @param[in, out] thiz pointer to the stack this operation should be performed on
+ * @param[in] thiz pointer to the stack this operation should be performed on
  * @return value that is located on top of the stack
  */
 STACK_TYPE top(TYPED_STACK(STACK_TYPE)* const thiz) {
     CHECK_STACK_OK(thiz);
     CHECK_STACK_CONDITION(thiz, thiz->_size > 0);
 
-    return thiz->_data[thiz->_size - 1];
+    return getStackData(thiz)[thiz->_size - 1];
 }
 
 /**
  * Gives the number of elements in the given stack.
- * @param[in, out] thiz pointer to the stack this operation should be performed on
+ * @param[in] thiz pointer to the stack this operation should be performed on
  * @return size of the stack.
  */
 ssize_t getStackSize(TYPED_STACK(STACK_TYPE)* const thiz) {
@@ -298,13 +420,30 @@ ssize_t getStackSize(TYPED_STACK(STACK_TYPE)* const thiz) {
 
 /**
  * Gives the actual size of the stack (size of the data holder array).
- * @param[in, out] thiz pointer to the stack this operation should be performed on
+ * @param[in] thiz pointer to the stack this operation should be performed on
  * @return capacity of the stack.
  */
 ssize_t getStackCapacity(TYPED_STACK(STACK_TYPE)* const thiz) {
     CHECK_STACK_CONDITION(thiz, thiz != nullptr);
 
     return thiz->_capacity;
+}
+
+/**
+ * Gives the pointer to the actual dynamic array of contained data:
+ *   - If the canary guards are turned on (STACK_SECURITY_LEVEL >= 2), adds the necessary offset to Stack _data pointer;
+ *   - Otherwise, just returns _data pointer.
+ * @param[in] thiz pointer to the stack this operation should be performed on
+ * @return pointer to the actual data array.
+ */
+static STACK_TYPE* getStackData(TYPED_STACK(STACK_TYPE)* const thiz) {
+    CHECK_STACK_CONDITION(thiz, thiz != nullptr);
+
+    #if STACK_SECURITY_LEVEL >= 2
+        return (STACK_TYPE*)(thiz->_data + sizeof(long long) * canariesNumber);
+    #else
+        return thiz->_data;
+    #endif
 }
 
 #endif // STACK_TYPE

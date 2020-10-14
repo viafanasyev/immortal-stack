@@ -5,12 +5,16 @@
 #include <sys/types.h>
 #include "testlib.h"
 
+#define STACK_SECURITY_LEVEL 2
 #define STACK_TYPE int
+#include "../src/stack.h"
+#undef STACK_TYPE
+#define STACK_TYPE double
 #include "../src/stack.h"
 #undef STACK_TYPE
 
 TEST(constructDestruct, simpleIntStack) {
-    Stack_int s{ 100, 200 };
+    Stack_int s{ {}, 100, 200, nullptr, {} };
     const size_t initialCapacity = 42;
     constructStack(&s, initialCapacity);
 
@@ -46,4 +50,48 @@ TEST(pushTopPop, correctStackElementsOrder) {
     destructStack(&s);
 }
 
-// TODO: Test memory vulnerabilities
+TEST(canaryTest, canaryModifyingFailsAssertion) {
+    struct {
+        long long canaryKillerBefore[1]{};
+        Stack_int s{};
+        long long canaryKillerAfter[1]{};
+    } canaryTesting;
+
+    constructStack(&canaryTesting.s);
+    int containedValue = 42;
+    push(&canaryTesting.s, containedValue);
+
+    int wrongIndexBefore = 1;
+    canaryTesting.canaryKillerBefore[wrongIndexBefore] = 0;
+    ASSERT_DIES(top(&canaryTesting.s));
+    canaryTesting.canaryKillerBefore[wrongIndexBefore] = canaryValue; // Restoring canary to properly destruct stack
+
+    ASSERT_EQUALS(top(&canaryTesting.s), containedValue); // Just checking that canary is ok before next test
+
+    int wrongIndexAfter = -1;
+    canaryTesting.canaryKillerAfter[wrongIndexAfter] = 0;
+    ASSERT_DIES(top(&canaryTesting.s));
+    canaryTesting.canaryKillerAfter[wrongIndexAfter] = canaryValue; // Restoring canary to properly destruct stack
+
+    destructStack(&canaryTesting.s);
+}
+
+TEST(canaryTest, dataCanaryModifyingFailsAssertion) {
+    Stack_int s{};
+
+    constructStack(&s);
+    int containedValue = 42;
+    push(&s, containedValue);
+
+    ((long long*)s._data)[0] = 0;
+    ASSERT_DIES(top(&s));
+    ((long long*)s._data)[0] = canaryValue; // Restoring canary to properly destruct stack
+
+    ASSERT_EQUALS(top(&s), containedValue); // Just checking that canary is ok before next test
+
+    ((long long*)(s._data + sizeof(long long) * canariesNumber + sizeof(int) * s._capacity))[0] = 0;
+    ASSERT_DIES(top(&s));
+    ((long long*)(s._data + sizeof(long long) * canariesNumber + sizeof(int) * s._capacity))[0] = canaryValue; // Restoring canary to properly destruct stack
+
+    destructStack(&s);
+}

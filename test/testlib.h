@@ -13,11 +13,15 @@
 #ifndef TESTS_TESTLIB_H
 #define TESTS_TESTLIB_H
 
-#include <iostream>
 #include <cassert>
-#include <vector>
 #include <cmath>
+#include <csignal>
 #include <functional>
+#include <fcntl.h>
+#include <iostream>
+#include <unistd.h>
+#include <vector>
+#include <wait.h>
 
 /**
  * Pointer to a function created by TEST(group, name) macro.
@@ -165,10 +169,10 @@ public:
 
 /**
  * Inner helper macro for showing that assertion and current test failed.
- * Use this in assertions macros, not in a tests.
+ * Use this in assertions macros, not in tests.
  *
  * @param[in] onFailure code that is executed during the assertion failure.
- *                           Can be use to print some additional info to std::cerr.
+ *                           Can be used to print some additional info to std::cerr.
  */
 #define TESTLIB_ASSERT_FAILED(onFailure) do {                                                                          \
     TestRunner* runner = TestRunner::getInstance();                                                                    \
@@ -250,5 +254,32 @@ static inline bool isZero(double x) {
  * @param value value to check for not-null
  */
 #define ASSERT_NOT_NULL(value) ASSERT_TRUE((value) != nullptr)
+
+/**
+ * Asserts if the statement execution makes the current process die.
+ *
+ * @param statement statement to check
+ */
+#define ASSERT_DIES(statement) do {                                                                                    \
+    int status = 0;                                                                                                    \
+    pid_t ppid = 0;                                                                                                    \
+    if ((ppid = fork()) < 0) {                                                                                         \
+        fprintf(stderr, "Failed to create child process\n");                                                           \
+        TESTLIB_ASSERT_FAILED();                                                                                       \
+    } else if (ppid == 0) {                                                                                            \
+        int fd = open("/dev/null", O_RDWR);                                                                            \
+        dup2(fd, 0);                                                                                                   \
+        dup2(fd, 1);                                                                                                   \
+        dup2(fd, 2);                                                                                                   \
+        close(fd);                                                                                                     \
+                                                                                                                       \
+        statement;                                                                                                     \
+                                                                                                                       \
+        exit(0);                                                                                                       \
+    }                                                                                                                  \
+                                                                                                                       \
+    waitpid(ppid, &status, 0);                                                                                         \
+    ASSERT_TRUE(status != 0);                                                                                          \
+} while (0)
 
 #endif // TESTS_TESTLIB_H
