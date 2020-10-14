@@ -2,7 +2,7 @@
  * @file
  */
 
-#define STACK_SECURITY_LEVEL 2
+#define STACK_SECURITY_LEVEL 3
 #define STACK_TYPE int
 #include "stack.h"
 #undef STACK_TYPE

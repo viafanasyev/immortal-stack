@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include "testlib.h"
 
-#define STACK_SECURITY_LEVEL 2
+#define STACK_SECURITY_LEVEL 3
 #define STACK_TYPE int
 #include "../src/stack.h"
 #undef STACK_TYPE
@@ -14,7 +14,7 @@
 #undef STACK_TYPE
 
 TEST(constructDestruct, simpleIntStack) {
-    Stack_int s{ {}, 100, 200, nullptr, {} };
+    Stack_int s{ {}, 0, 100, 200, nullptr, {} };
     const size_t initialCapacity = 42;
     constructStack(&s, initialCapacity);
 
@@ -92,6 +92,53 @@ TEST(canaryTest, dataCanaryModifyingFailsAssertion) {
     ((long long*)(s._data + sizeof(long long) * canariesNumber + sizeof(int) * s._capacity))[0] = 0;
     ASSERT_DIES(top(&s));
     ((long long*)(s._data + sizeof(long long) * canariesNumber + sizeof(int) * s._capacity))[0] = canaryValue; // Restoring canary to properly destruct stack
+
+    destructStack(&s);
+}
+
+TEST(hashTest, stackMembersModifyingFailsAssertion) {
+    Stack_int s{};
+
+    constructStack(&s);
+    push(&s, 1);
+    push(&s, 2);
+    push(&s, 3);
+    push(&s, 4);
+    push(&s, 5);
+    int topValue = top(&s);
+
+    ssize_t realSize = s._size;
+    s._size = realSize - 1;
+    ASSERT_DIES(top(&s));
+    s._size = realSize; // Restoring real value before next check
+
+    ASSERT_EQUALS(top(&s), topValue); // Just checking that hash is ok before next test
+
+    ssize_t realCapacity = s._capacity;
+    s._capacity = realCapacity + 1;
+    ASSERT_DIES(top(&s));
+    s._capacity = realCapacity; // Restoring real value before next check
+
+    ASSERT_EQUALS(top(&s), topValue); // Just checking that hash is ok before next test
+
+    int realHash = s._hash;
+    s._hash = realHash + 1;
+    ASSERT_DIES(top(&s));
+    s._hash = realHash; // Restoring real value to properly destruct stack
+
+    destructStack(&s);
+}
+
+TEST(hashTest, stackDataModifyingFailsAssertion) {
+    Stack_int s{};
+
+    constructStack(&s);
+    int containedValue = 42;
+    push(&s, containedValue);
+
+    ((int*)(s._data + sizeof(long long) * canariesNumber))[0] = containedValue + 1;
+    ASSERT_DIES(top(&s));
+    ((int*)(s._data + sizeof(long long) * canariesNumber))[0] = containedValue; // Restoring real value to properly destruct stack
 
     destructStack(&s);
 }

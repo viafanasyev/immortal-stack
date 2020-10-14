@@ -37,13 +37,17 @@
  * Generic stack that can contain any (almost) value that is specified by STACK_TYPE macro.
  * Stack allocates new memory if there's no empty space left to add new element.
  * Stack operations (construct/destruct, push, pop, etc) should be performed using the functions below.
- * Stack can perform different corruption checking (see STACK_SECURITY_LEVEL): silent verification, canary guards.
+ * Stack can perform different corruption checking (see STACK_SECURITY_LEVEL): silent verification, canary guards, hash checking.
  */
 struct TYPED_STACK(STACK_TYPE) {
     /* !!! Private members !!! */
 
 #if STACK_SECURITY_LEVEL >= 2
     long long _canariesBefore[canariesNumber];
+#endif
+
+#if STACK_SECURITY_LEVEL >= 3
+    int _hash = 0;
 #endif
 
     /** Number of elements in stack */
@@ -141,6 +145,15 @@ ssize_t getStackCapacity(TYPED_STACK(STACK_TYPE)* thiz);
  * @return pointer to the actual data array.
  */
 static STACK_TYPE* getStackData(TYPED_STACK(STACK_TYPE)* thiz);
+
+#if STACK_SECURITY_LEVEL >= 3
+/**
+ * Calculates the hash value of the given stack using polynomial hashing. Skips _hash member of the stack.
+ * @param[in] thiz pointer to the stack this operation should be performed on
+ * @return calculated hash value.
+ */
+static int getHash(TYPED_STACK(STACK_TYPE)* thiz);
+#endif
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -259,7 +272,7 @@ bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
         (stack->_capacity == -1)           ||
         (stack->_size > stack->_capacity)  ||
         (stack->_data == nullptr)
-        ) {
+    ) {
         return false;
     }
 
@@ -274,6 +287,10 @@ bool isStackOk(TYPED_STACK(STACK_TYPE)* stack) {
             if (dataCanariesBefore    [i] != canaryValue) return false;
             if (dataCanariesAfter     [i] != canaryValue) return false;
         }
+    #endif
+
+    #if STACK_SECURITY_LEVEL >= 3
+        if (getHash(stack) != stack->_hash) return false;
     #endif
 
     return true;
@@ -311,6 +328,10 @@ void constructStack(TYPED_STACK(STACK_TYPE)* const thiz, size_t initialCapacity)
     #else
         thiz->_data = new STACK_TYPE[initialCapacity];
     #endif
+
+    #if STACK_SECURITY_LEVEL >= 3
+        thiz->_hash = getHash(thiz);
+    #endif
 }
 
 /**
@@ -324,6 +345,10 @@ void destructStack(TYPED_STACK(STACK_TYPE)* const thiz) {
     thiz->_capacity = 0;
     delete[] thiz->_data;
     thiz->_data = nullptr;
+
+    #if STACK_SECURITY_LEVEL >= 3
+        thiz->_hash = 0;
+    #endif
 }
 
 /**
@@ -364,6 +389,10 @@ void enlarge(TYPED_STACK(STACK_TYPE)* const thiz) {
         thiz->_data = newData;
     }
 
+    #if STACK_SECURITY_LEVEL >= 3
+        thiz->_hash = getHash(thiz);
+    #endif
+
     CHECK_STACK_OK(thiz);
 }
 
@@ -380,6 +409,10 @@ void push(TYPED_STACK(STACK_TYPE)* const thiz, STACK_TYPE x) {
     }
     getStackData(thiz)[thiz->_size++] = x;
 
+    #if STACK_SECURITY_LEVEL >= 3
+        thiz->_hash = getHash(thiz);
+    #endif
+
     CHECK_STACK_OK(thiz);
 }
 
@@ -392,7 +425,13 @@ STACK_TYPE pop(TYPED_STACK(STACK_TYPE)* const thiz) {
     CHECK_STACK_OK(thiz);
     CHECK_STACK_CONDITION(thiz, thiz->_size > 0);
 
-    return getStackData(thiz)[--thiz->_size];
+    STACK_TYPE top = getStackData(thiz)[--thiz->_size];
+
+    #if STACK_SECURITY_LEVEL >= 3
+        thiz->_hash = getHash(thiz);
+    #endif
+
+    return top;
 }
 
 /**
@@ -445,5 +484,39 @@ static STACK_TYPE* getStackData(TYPED_STACK(STACK_TYPE)* const thiz) {
         return thiz->_data;
     #endif
 }
+
+#if STACK_SECURITY_LEVEL >= 3
+/**
+ * Calculates the hash value of the given stack using polynomial hashing. Skips _hash member of the stack.
+ * @param[in] thiz pointer to the stack this operation should be performed on
+ * @return calculated hash value.
+ */
+static int getHash(TYPED_STACK(STACK_TYPE)* thiz) {
+    CHECK_STACK_CONDITION(thiz, thiz != nullptr && thiz->_data != nullptr);
+
+    constexpr int modulo = 1'000'000'009;
+    constexpr int p = 31; // TODO: Find better hash settings?
+
+    int hash = 0;
+    for (char* bytePtr = (char*)thiz; bytePtr < (char*)&(thiz->_hash); ++bytePtr) {
+        hash = (hash * p) % modulo;
+        hash = (hash + *bytePtr) % modulo;
+    }
+    for (char* bytePtr = (char*)&(thiz->_hash) + sizeof(thiz->_hash); bytePtr < (char*)thiz + sizeof(TYPED_STACK(STACK_TYPE)); ++bytePtr) {
+        hash = (hash * p) % modulo;
+        hash = (hash + *bytePtr) % modulo;
+    }
+    for (
+        char* bytePtr = thiz->_data;
+        bytePtr < thiz->_data + sizeof(long long) * canariesNumber + sizeof(STACK_TYPE) * thiz->_capacity + sizeof(long long) * canariesNumber;
+        ++bytePtr
+    ) {
+        hash = (hash * p) % modulo;
+        hash = (hash + *bytePtr) % modulo;
+    }
+
+    return hash;
+}
+#endif
 
 #endif // STACK_TYPE
