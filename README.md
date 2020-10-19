@@ -1,5 +1,9 @@
 # Immortal stack
 
+
+!!! THIS IS NOT A WORKING COPY OF THE PROJECT. TO SEE THE REAL PROJECT CHANGE BRANCH TO 'MASTER' !!!
+
+
 ## Project description
 
 This program is developed as a part of ISP RAS course.  
