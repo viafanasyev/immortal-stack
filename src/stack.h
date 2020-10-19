@@ -211,10 +211,6 @@ static int getHash(TYPED_STACK(STACK_TYPE)* thiz);
 #define LOG_STACK(stack) do {                                                                                          \
     logPrintf("%s %s [" PTR_FORMAT "] (%s:%d)",                                                                        \
         str(TYPED_STACK(STACK_TYPE)), #stack, (uintptr_t)stack, __FILENAME__, __LINE__);                               \
-    if (stack == nullptr) {                                                                                            \
-        logPrintf("\n");                                                                                               \
-        break;                                                                                                         \
-    }                                                                                                                  \
     logPrintf(" = {\n");                                                                                               \
     ssize_t size = stack->_size;                                                                                       \
     ssize_t capacity = stack->_capacity;                                                                               \
@@ -250,7 +246,7 @@ static int getHash(TYPED_STACK(STACK_TYPE)* thiz);
     #define CHECK_STACK_CONDITION(stack, condition) do { } while(0)
 #endif
 
-#if STACK_SECURITY_LEVEL >= 1
+#if STACK_SECURITY_LEVEL <= 1
     /**
      * Checks if the given stack is in normal state.
      *
@@ -378,7 +374,7 @@ void enlarge(TYPED_STACK(STACK_TYPE)* const thiz) {
             long long* dataCanariesBefore =
                 ((long long*)newData);
             long long* dataCanariesAfter  =
-                ((long long*)(newData + sizeof(long long) * canariesNumber + sizeof(STACK_TYPE) * thiz->_capacity));
+                ((long long*)(newData + sizeof(int) * canariesNumber + sizeof(STACK_TYPE) * thiz->_capacity));
             for (size_t i = 0; i < canariesNumber; ++i) {
                 dataCanariesBefore[i] = canaryValue;
                 dataCanariesAfter [i] = canaryValue;
