@@ -63,14 +63,14 @@ TEST(canaryTest, canaryModifyingFailsAssertion) {
 
     int wrongIndexBefore = 1;
     canaryTesting.canaryKillerBefore[wrongIndexBefore] = 0;
-    ASSERT_DIES(top(&canaryTesting.s));
+    ASSERT_FAILS_ASSERTION(top(&canaryTesting.s));
     canaryTesting.canaryKillerBefore[wrongIndexBefore] = canaryValue; // Restoring canary to properly destruct stack
 
     ASSERT_EQUALS(top(&canaryTesting.s), containedValue); // Just checking that canary is ok before next test
 
     int wrongIndexAfter = -1;
     canaryTesting.canaryKillerAfter[wrongIndexAfter] = 0;
-    ASSERT_DIES(top(&canaryTesting.s));
+    ASSERT_FAILS_ASSERTION(top(&canaryTesting.s));
     canaryTesting.canaryKillerAfter[wrongIndexAfter] = canaryValue; // Restoring canary to properly destruct stack
 
     destructStack(&canaryTesting.s);
@@ -84,13 +84,13 @@ TEST(canaryTest, dataCanaryModifyingFailsAssertion) {
     push(&s, containedValue);
 
     ((long long*)s._data)[0] = 0;
-    ASSERT_DIES(top(&s));
+    ASSERT_FAILS_ASSERTION(top(&s));
     ((long long*)s._data)[0] = canaryValue; // Restoring canary to properly destruct stack
 
     ASSERT_EQUALS(top(&s), containedValue); // Just checking that canary is ok before next test
 
     ((long long*)(s._data + sizeof(long long) * canariesNumber + sizeof(int) * s._capacity))[0] = 0;
-    ASSERT_DIES(top(&s));
+    ASSERT_FAILS_ASSERTION(top(&s));
     ((long long*)(s._data + sizeof(long long) * canariesNumber + sizeof(int) * s._capacity))[0] = canaryValue; // Restoring canary to properly destruct stack
 
     destructStack(&s);
@@ -109,21 +109,21 @@ TEST(hashTest, stackMembersModifyingFailsAssertion) {
 
     ssize_t realSize = s._size;
     s._size = realSize - 1;
-    ASSERT_DIES(top(&s));
+    ASSERT_FAILS_ASSERTION(top(&s));
     s._size = realSize; // Restoring real value before next check
 
     ASSERT_EQUALS(top(&s), topValue); // Just checking that hash is ok before next test
 
     ssize_t realCapacity = s._capacity;
     s._capacity = realCapacity + 1;
-    ASSERT_DIES(top(&s));
+    ASSERT_FAILS_ASSERTION(top(&s));
     s._capacity = realCapacity; // Restoring real value before next check
 
     ASSERT_EQUALS(top(&s), topValue); // Just checking that hash is ok before next test
 
     int realHash = s._hash;
     s._hash = realHash + 1;
-    ASSERT_DIES(top(&s));
+    ASSERT_FAILS_ASSERTION(top(&s));
     s._hash = realHash; // Restoring real value to properly destruct stack
 
     destructStack(&s);
@@ -137,8 +137,48 @@ TEST(hashTest, stackDataModifyingFailsAssertion) {
     push(&s, containedValue);
 
     ((int*)(s._data + sizeof(long long) * canariesNumber))[0] = containedValue + 1;
-    ASSERT_DIES(top(&s));
+    ASSERT_FAILS_ASSERTION(top(&s));
     ((int*)(s._data + sizeof(long long) * canariesNumber))[0] = containedValue; // Restoring real value to properly destruct stack
 
     destructStack(&s);
+}
+
+TEST(nullptrPassing, construct) {
+    ASSERT_FAILS_ASSERTION(constructStack((Stack_int*)nullptr));
+}
+
+TEST(nullptrPassing, destruct) {
+    ASSERT_FAILS_ASSERTION(destructStack((Stack_int*)nullptr));
+}
+
+TEST(nullptrPassing, push) {
+    ASSERT_FAILS_ASSERTION(push((Stack_int*)nullptr, 0));
+}
+
+TEST(nullptrPassing, pop) {
+    ASSERT_FAILS_ASSERTION(pop((Stack_int*)nullptr));
+}
+
+TEST(nullptrPassing, top) {
+    ASSERT_FAILS_ASSERTION(top((Stack_int*)nullptr));
+}
+
+TEST(nullptrPassing, enlarge) {
+    ASSERT_FAILS_ASSERTION(enlarge((Stack_int*)nullptr));
+}
+
+TEST(nullptrPassing, getStackSize) {
+    ASSERT_FAILS_ASSERTION(getStackSize((Stack_int*)nullptr));
+}
+
+TEST(nullptrPassing, getStackCapacity) {
+    ASSERT_FAILS_ASSERTION(getStackCapacity((Stack_int*)nullptr));
+}
+
+TEST(nullptrPassing, getStackData) {
+    ASSERT_FAILS_ASSERTION(getStackData((Stack_int*)nullptr));
+}
+
+TEST(nullptrPassing, getHash) {
+    ASSERT_FAILS_ASSERTION(getHash((Stack_int*)nullptr));
 }

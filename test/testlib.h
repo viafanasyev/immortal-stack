@@ -282,4 +282,33 @@ static inline bool isZero(double x) {
     ASSERT_TRUE(status != 0);                                                                                          \
 } while (0)
 
+/**
+ * Asserts if the statement execution makes the assert (see assert.h or cassert) fail.
+ *
+ * @note This macro temporarily works only for UNIX-like OS.
+ *
+ * @param statement statement to check
+ */
+#define ASSERT_FAILS_ASSERTION(statement) do {                                                                                    \
+    int status = 0;                                                                                                    \
+    pid_t ppid = 0;                                                                                                    \
+    if ((ppid = fork()) < 0) {                                                                                         \
+        fprintf(stderr, "Failed to create child process\n");                                                           \
+        TESTLIB_ASSERT_FAILED();                                                                                       \
+    } else if (ppid == 0) {                                                                                            \
+        int fd = open("/dev/null", O_RDWR);                                                                            \
+        dup2(fd, 0);                                                                                                   \
+        dup2(fd, 1);                                                                                                   \
+        dup2(fd, 2);                                                                                                   \
+        close(fd);                                                                                                     \
+                                                                                                                       \
+        statement;                                                                                                     \
+                                                                                                                       \
+        exit(0);                                                                                                       \
+    }                                                                                                                  \
+                                                                                                                       \
+    waitpid(ppid, &status, 0);                                                                                         \
+    ASSERT_TRUE(status == 128 + SIGABRT);                                                                                          \
+} while (0)
+
 #endif // TESTS_TESTLIB_H
